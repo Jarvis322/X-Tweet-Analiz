@@ -1,0 +1,9 @@
+{
+  "name": "x-analizor",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
