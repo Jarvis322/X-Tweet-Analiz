@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Algoritma Analizörü ULTRA - @yigitech</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #16181c;
+            --input-bg: #202327;
+            --text-main: #e7e9ea;
+            --text-secondary: #71767b;
+            --primary: #1d9bf0;
+            --primary-hover: #1a8cd8;
+            --danger: #f91880;
+            --success: #00ba7c;
+            --warning: #ffd400;
+            --border: #2f3336;
+        }
+
+        /* Genel Sayfa Yapısı */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Kaydırma Çubuğu */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* HEADER */
+        .header {
+            grid-column: 1 / -1;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 20px; 
+            margin-bottom: 10px;
+        }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .x-logo { width: 30px; height: 30px; fill: white; }
+        .badge-ultra { 
+            background: linear-gradient(45deg, #f91880, #1d9bf0); 
+            color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 900; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* KARTLAR */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        /* SİMÜLASYON PANELİ */
+        .simulation-bar {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .sim-group { display: flex; flex-direction: column; gap: 8px; }
+        .sim-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: bold; }
+        
+        select, input[type="time"] {
+            background: var(--bg-color); 
+            color: white; 
+            border: 1px solid var(--border);
+            padding: 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            outline: none;
+            width: 100%; 
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        
+        select:focus, input:focus { border-color: var(--primary); }
+
+        /* EDİTÖR */
+        .avatar-area { display: flex; gap: 15px; margin-bottom: 15px; }
+        .avatar { 
+            width: 48px; height: 48px; flex-shrink: 0;
+            border-radius: 50%; background-color: var(--text-secondary); position: relative; 
+        }
+        .verified-badge {
+            position: absolute; bottom: 0; right: -2px; width: 18px; height: 18px;
+            fill: var(--primary); background: white; border-radius: 50%; border: 2px solid var(--bg-color); display: none;
+        }
+        .verified-gold { fill: var(--warning); }
+
+        textarea {
+            width: 100%; background: transparent; border: none; color: var(--text-main);
+            font-size: 20px; font-family: inherit; resize: none; min-height: 150px;
+            outline: none; line-height: 1.5; padding: 0;
+        }
+
+        /* MEDYA */
+        .media-preview {
+            margin-top: 15px; height: 220px; background-color: #000;
+            border: 1px solid var(--border); border-radius: 16px; display: none;
+            align-items: center; justify-content: center; color: var(--text-secondary);
+            position: relative; overflow: hidden;
+        }
+        .media-tag { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .close-media { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; z-index: 2; }
+
+        /* TOOLS */
+        .tools { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; color: var(--primary); display: flex; }
+        .icon-btn:hover { background-color: rgba(29, 155, 240, 0.1); }
+        .active-media { background-color: rgba(29, 155, 240, 0.2); }
+        
+        .send-btn { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 15px; }
+
+        /* SKOR KARTI */
+        .score-card { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .score-big { font-size: 5.5rem; font-weight: 900; line-height: 1; margin-bottom: 5px; }
+        .score-title { color: var(--text-secondary); text-transform: uppercase; font-size: 12px; letter-spacing: 2px; }
+
+        /* METRİKLER */
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mini-metric { background: var(--input-bg); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .mini-val { font-weight: bold; font-size: 18px; margin-bottom: 4px; }
+        .mini-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
+
+        /* FEEDBACK */
+        .feedback-list { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; }
+        .feedback-item { display: flex; gap: 10px; font-size: 13px; margin-bottom: 8px; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border-left: 3px solid transparent; }
+        .feedback-item.success { border-color: var(--success); background: rgba(0, 186, 124, 0.1); }
+        .feedback-item.warning { border-color: var(--warning); background: rgba(255, 212, 0, 0.1); }
+        .feedback-item.danger { border-color: var(--danger); background: rgba(249, 24, 128, 0.1); }
+
+        /* FOOTER */
+        .footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        .footer a:hover { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="brand">
+            <svg viewBox="0 0 24 24" class="x-logo"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+            <h1>Tweet Analiz <span class="badge-ultra">ULTRA</span></h1>
+        </div>
+        <div style="font-size: 11px; color: var(--text-secondary); text-align: right;">v3.1 Final<br>Grok Simulation</div>
+    </div>
+
+    <!-- SİMÜLASYON AYARLARI -->
+    <div class="simulation-bar">
+        <div class="sim-group">
+            <label class="sim-label">Hesap Otoritesi</label>
+            <select id="accountType" onchange="runAnalysis()">
+                <option value="new">Yeni Hesap (Düşük)</option>
+                <option value="standard" selected>Standart</option>
+                <option value="verified">Onaylı (Blue)</option>
+                <option value="gold">Kurumsal (Gold)</option>
+            </select>
+        </div>
+        <div class="sim-group">
+            <label class="sim-label">Konu (Cluster)</label>
+            <select id="topicCluster" onchange="runAnalysis()">
+                <option value="general" selected>Genel / Sohbet</option>
+                <option value="tech">Teknoloji / Yazılım</option>
+                <option value="sports">Spor / Futbol</option>
+                <option value="politics">Siyaset / Haber</option>
+                <option value="crypto">Kripto / Finans</option>
+                <option value="adult">NSFW / +18 (Filtreli)</option>
+            </select>
+        </div>
+        <div class="sim-group">
+            <label class="sim-label">Paylaşım Saati</label>
+            <input type="time" id="postTime" value="19:00" onchange="runAnalysis()">
+        </div>
+    </div>
+
+    <!-- EDİTÖR -->
+    <div class="card">
+        <div class="avatar-area">
+            <div class="avatar">
+                <svg viewBox="0 0 24 24" class="verified-badge" id="badgeIcon"><g><path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.083.965.238 1.4-1.272.65-2.147 2.02-2.147 3.6 0 1.435.716 2.69 1.77 3.46-.252.546-.421 1.137-.421 1.79 0 2.21 1.71 4 3.818 4 .47 0 .92-.086 1.336-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.866.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.65-.17-1.242-.42-1.79 1.053-.77 1.77-2.025 1.77-3.46zM12 16.25c-.414 0-.75-.336-.75-.75v-6.5c0-.414.336-.75.75-.75s.75.336.75.75v6.5c0 .414-.336.75-.75.75z"></path></g></svg>
+            </div>
+            <div>
+                <div style="font-weight: bold; font-size: 15px;">Kullanıcı Adı</div>
+                <div style="color: var(--text-secondary); font-size: 13px;">@kullanici</div>
+            </div>
+        </div>
+
+        <textarea id="tweetInput" placeholder="Neler oluyor?"></textarea>
+
+        <div id="mediaPreview" class="media-preview">
+            <span id="mediaText" style="font-size: 50px;">📷</span>
+            <div class="media-tag" id="mediaTag">Görsel</div>
+            <button class="close-media" onclick="removeMedia()">×</button>
+        </div>
+
+        <div class="tools">
+            <div style="display: flex; gap: 5px;">
+                <button class="icon-btn" onclick="setMedia('image')" title="Resim"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 5.5C3 4.119 4.119 3 5.5 3h13C19.881 3 21 4.119 21 5.5v13c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v9.086l3-3 3 3 5-5 3 3V5.5c0-.276-.224-.5-.5-.5h-13zM19 15.414l-3-3-5 5-3-3-3 3V18.5c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-3.086zM9.75 7C8.784 7 8 7.784 8 8.75s.784 1.75 1.75 1.75 1.75-.784 1.75-1.75S10.716 7 9.75 7z"></path></svg></button>
+                <button class="icon-btn" onclick="setMedia('video')" title="Video"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 5.5C3 4.119 4.12 3 5.5 3h13C19.88 3 21 4.119 21 5.5v13c0 1.381-1.12 2.5-2.5 2.5h-13C4.12 21 3 19.881 3 18.5v-13zM5.5 5c-.28 0-.5.224-.5.5v13c0 .276.22.5.5.5h13c.28 0 .5-.224.5-.5v-13c0-.276-.22-.5-.5-.5h-13zM16 10.59v2.82l-5 2.5V8.09l5 2.5z"></path></svg></button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="charCount" style="color: var(--text-secondary); font-size: 13px;">0 / 280</span>
+                <button class="send-btn">Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANALİZ -->
+    <div class="card">
+        <div class="score-card">
+            <div class="score-big" id="finalScore">0</div>
+            <div class="score-title">Viral Olasılık Skoru</div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="mini-metric">
+                <span class="mini-val" id="pLikelihood" style="color: var(--primary)">Düşük</span>
+                <span class="mini-label">Görünürlük</span>
+            </div>
+            <div class="mini-metric">
+                <span class="mini-val" id="pSpam" style="color: var(--danger)">Temiz</span>
+                <span class="mini-label">Spam Riski</span>
+            </div>
+            <div class="mini-metric">
+                <span class="mini-val" id="pTime" style="color: var(--success)">--</span>
+                <span class="mini-label">Zamanlama</span>
+            </div>
+            <div class="mini-metric">
+                <span class="mini-val" id="pFormat" style="color: var(--warning)">--</span>
+                <span class="mini-label">Biçim</span>
+            </div>
+        </div>
+
+        <h4 style="margin: 10px 0; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Grok Analiz Raporu</h4>
+        <ul class="feedback-list" id="feedbackList">
+            <li class="feedback-item" style="color: var(--text-secondary)">Analiz bekleniyor...</li>
+        </ul>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Developed by <a href="https://x.com/yigitech" target="_blank">@yigitech</a>
+    </div>
+
+</div>
+
+<script>
+    let currentMedia = 'none';
+    const input = document.getElementById('tweetInput');
+    const badgeIcon = document.getElementById('badgeIcon');
+    const mediaPreview = document.getElementById('mediaPreview');
+
+    input.addEventListener('input', runAnalysis);
+    
+    function setMedia(type) {
+        currentMedia = type;
+        mediaPreview.style.display = 'flex';
+        const txt = document.getElementById('mediaText');
+        const tag = document.getElementById('mediaTag');
+        if(type === 'image') { txt.textContent = "📷"; tag.textContent = "Görsel"; } 
+        else { txt.textContent = "🎥"; tag.textContent = "Video"; }
+        runAnalysis();
+    }
+
+    function removeMedia() {
+        currentMedia = 'none';
+        mediaPreview.style.display = 'none';
+        runAnalysis();
+    }
+
+    function runAnalysis() {
+        const text = input.value;
+        const length = text.length;
+        const words = text.toLowerCase().split(/\s+/);
+        const lines = text.split('\n').length;
+        const accountType = document.getElementById('accountType').value;
+        const topic = document.getElementById('topicCluster').value;
+        const timeStr = document.getElementById('postTime').value;
+        
+        let score = 50;
+        let spamRisk = 0;
+        let feedback = [];
+
+        document.getElementById('charCount').textContent = ${length} / 280;
+
+        if(length === 0 && currentMedia === 'none') {
+            renderResults(0, "Düşük", "Temiz", "--", "--", []);
+            return;
+        }
+
+        // ZAMANLAMA
+        const hour = parseInt(timeStr.split(':')[0]);
+        let timeScore = "Normal";
+        if (hour >= 2 && hour <= 6) { score -= 15; timeScore = "Ölü Saat"; feedback.push({type: 'warning', msg: "Ölü Saat: Erişim bu saatlerde kısıtlıdır."}); } 
+        else if (hour >= 18 && hour <= 22) { score += 10; timeScore = "Prime Time"; feedback.push({type: 'success', msg: "Prime Time: Kullanıcı aktivitesi zirvede."}); }
+
+        // KONU & SPAM
+        if (topic === 'crypto') {
+            const cryptoWords = ['moon', 'gem', 'pump', 'airdrop'];
+            if (words.some(w => cryptoWords.some(s => w.includes(s)))) { score -= 30; spamRisk += 60; feedback.push({type: 'danger', msg: "Kripto Spam uyarısı tetiklendi."}); }
+        } else if (topic === 'adult') {
+            score = 0; spamRisk = 100; feedback.push({type: 'danger', msg: "Yetişkin İçerik Filtresi: Görünürlük tamamen kapatıldı."});
+        }
+
+        // MEDYA
+        let formatStatus = "Standart";
+        if (currentMedia === 'video') { score += 35; formatStatus = "Mükemmel"; feedback.push({type: 'success', msg: "Video Boost: +35 Puan."}); } 
+        else if (currentMedia === 'image') { score += 15; formatStatus = "İyi"; }
+        if (length > 180 && lines < 2) { score -= 10; formatStatus = "Zayıf"; feedback.push({type: 'warning', msg: "Okunabilirlik düşük (Satır boşluğu ekle)."}); }
+
+        // OTORİTE
+        let authMult = 1.0;
+        badgeIcon.style.display = 'none';
+        badgeIcon.classList.remove('verified-gold');
+        if (accountType === 'new') { authMult = 0.6; feedback.push({type: 'warning', msg: "Yeni Hesap Cezası: -%40 erişim."}); } 
+        else if (accountType === 'verified') { authMult = 1.4; badgeIcon.style.display = 'block'; feedback.push({type: 'success', msg: "Mavi Tik Önceliği: +%40 erişim."}); } 
+        else if (accountType === 'gold') { authMult = 1.8; badgeIcon.style.display = 'block'; badgeIcon.classList.add('verified-gold'); }
+
+        // GENEL SPAM
+        const spams = ['takip', 'rt', 'dm'];
+        if (words.some(w => spams.some(s => w.includes(s)))) { score -= 20; spamRisk += 40; feedback.push({type: 'danger', msg: "Engagement Bait tespiti."}); }
+
+        let finalScore = Math.floor(score * authMult);
+        finalScore = Math.min(100, Math.max(0, finalScore));
+
+        renderResults(finalScore, (finalScore > 75 ? "Viral" : (finalScore > 40 ? "Orta" : "Düşük")), (spamRisk > 40 ? "Spam" : "Temiz"), timeScore, formatStatus, feedback);
+    }
+
+    function renderResults(score, visibility, spam, time, format, feedbackItems) {
+        document.getElementById('finalScore').textContent = score;
+        document.getElementById('finalScore').style.color = score > 80 ? 'var(--success)' : (score > 45 ? 'var(--warning)' : 'var(--danger)');
+        document.getElementById('pLikelihood').textContent = visibility;
+        document.getElementById('pSpam').textContent = spam;
+        document.getElementById('pTime').textContent = time;
+        document.getElementById('pFormat').textContent = format;
+
+        const list = document.getElementById('feedbackList');
+        list.innerHTML = '';
+        if(feedbackItems.length === 0) list.innerHTML = '<li class="feedback-item">Analiz bekleniyor...</li>';
+        feedbackItems.forEach(item => {
+            const li = document.createElement('li');
+            li.className = feedback-item ${item.type};
+            li.textContent = item.msg;
+            list.appendChild(li);
+        });
+    }
+</script>
+</body>
+</html>
